@@ -1707,7 +1707,37 @@ void handle_controller_cursor_input(void) {
     }
 
     if (sCursorClickingTimer == 0) {
-        handle_cursor_button_input();
+        // Palette: Add B button to return to main menu from submenus
+        if (sCurrentMenuLevel == MENU_LAYER_SUBMENU && (gPlayer3Controller->buttonPressed & B_BUTTON)) {
+            s16 returnButtonID = -1;
+            switch (sSelectedButtonID) {
+                case MENU_BUTTON_SCORE:
+                    returnButtonID = MENU_BUTTON_SCORE_RETURN;
+                    break;
+                case MENU_BUTTON_COPY:
+                    returnButtonID = MENU_BUTTON_COPY_RETURN;
+                    break;
+                case MENU_BUTTON_ERASE:
+                    returnButtonID = MENU_BUTTON_ERASE_RETURN;
+                    break;
+                case MENU_BUTTON_SOUND_MODE:
+#ifdef VERSION_EU
+                    returnButtonID = MENU_BUTTON_LANGUAGE_RETURN;
+#else
+                    returnButtonID = MENU_BUTTON_OPTION_MIN + sSoundMode;
+#endif
+                    break;
+            }
+            if (returnButtonID != -1 && sMainMenuButtons[returnButtonID] != NULL) {
+                sClickPos[0] = sMainMenuButtons[returnButtonID]->oPosX;
+                sClickPos[1] = sMainMenuButtons[returnButtonID]->oPosY;
+                sCursorClickingTimer = 1;
+            }
+        }
+
+        if (sCursorClickingTimer == 0) {
+            handle_cursor_button_input();
+        }
     }
 }
 
