@@ -39,6 +39,12 @@ void decompress(void *mio0, void *dest) {
 
     while (out < outEnd) {
         if (bitsLeft == 0) {
+            // Ensure we don't read past the end of the layout bits section.
+            // The compressed data section immediately follows the layout bits.
+            if (layoutBits + 4 > compressedData) {
+                // Corrupted data, abort.
+                return;
+            }
             currentBits = (u32)(*layoutBits++) << 24;
             currentBits |= (u32)(*layoutBits++) << 16;
             currentBits |= (u32)(*layoutBits++) << 8;
