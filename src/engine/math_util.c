@@ -530,7 +530,7 @@ void mtxf_mul(Mat4 dest, Mat4 a, Mat4 b) {
     out[0][3] = out[1][3] = out[2][3] = 0;
     out[3][3] = 1;
 
-    if (dest == b) {
+    if (dest == b || dest == a) {
         mtxf_copy(dest, temp);
     }
 }
