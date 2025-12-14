@@ -689,6 +689,37 @@ void thread5_game_loop(UNUSED void *arg) {
         audio_game_loop_tick();
         select_gfx_pool();
         read_controller_inputs();
+
+        /*
+         * Frame Independence / Decoupling Suggestion:
+         *
+         * To decouple physics (30hz) from rendering (uncapped/vsync), we should accumulate
+         * time deltas and run the physics update in a fixed-step loop, then render.
+         *
+         * Proposed structure:
+         *
+         * static u64 sLastTime = 0;
+         * u64 currentTime = osGetTime();
+         * u64 deltaTime = currentTime - sLastTime;
+         * sLastTime = currentTime;
+         * sAccumulator += deltaTime;
+         *
+         * while (sAccumulator >= FIXED_TIME_STEP) {
+         *     // Run physics update
+         *     addr = level_script_execute(addr); // Problem: This function currently does both update AND DL generation
+         *     sAccumulator -= FIXED_TIME_STEP;
+         * }
+         *
+         * // Interpolate state based on sAccumulator / FIXED_TIME_STEP
+         * // render_game(interpolation_factor);
+         *
+         * Challenges:
+         * 1. `level_script_execute` mixes logic and rendering (generating display lists).
+         *    This needs to be split into `level_update` and `level_render`.
+         * 2. State interpolation requires previous and current state storage for all moving objects.
+         */
+
+        // Current implementation (Coupled):
         addr = level_script_execute(addr);
 
         display_and_vsync();
