@@ -493,7 +493,7 @@ void mtxf_mul(Mat4 dest, Mat4 a, Mat4 b) {
     register f32 entry0;
     register f32 entry1;
     register f32 entry2;
-    f32 (*out)[4] = (f32 (*)[4])((dest != b) ? dest : temp);
+    f32 (*out)[4] = (f32 (*)[4])((dest != b && dest != a) ? dest : temp);
 
     // column 0
     entry0 = a[0][0];
