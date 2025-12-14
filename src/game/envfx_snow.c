@@ -229,7 +229,7 @@ void envfx_update_snow_normal(s32 snowCylinderX, s32 snowCylinderY, s32 snowCyli
             particle->isAlive = TRUE;
         } else {
             particle->xPos += random_float() * 2 - 1.0f + deltaX_div;
-            particle->yPos -= 2 - deltaY_div;
+            particle->yPos += deltaY_div - 2;
             particle->zPos += random_float() * 2 - 1.0f + deltaZ_div;
         }
     }
