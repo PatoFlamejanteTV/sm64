@@ -295,8 +295,8 @@ LIBGCC_O_FILES := $(foreach file,$(LIBGCC_C_FILES),$(BUILD_DIR)/$(file:.c=.o))
 DEP_FILES := $(O_FILES:.o=.d) $(ULTRA_O_FILES:.o=.d) $(GODDARD_O_FILES:.o=.d) $(LIBGCC_O_FILES:.o=.d) $(BUILD_DIR)/$(LD_SCRIPT).d
 
 # C++ Compiler options
-CXX := g++
-CXXFLAGS := -O2 -Wall -Iinclude -Isrc
+CXX = $(CROSS)g++
+CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 
 # Files with GLOBAL_ASM blocks
 ifeq ($(NON_MATCHING),0)

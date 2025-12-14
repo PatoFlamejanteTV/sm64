@@ -50,11 +50,6 @@ void decompress(void *src_void, void *dst_void) {
             u32 length = (val >> 12) + 3;
             u32 offset = (val & 0xFFF) + 1;
 
-            if (offset > dst_pos) {
-                // Corrupt data, offset is out of bounds.
-                // It's safest to stop decompressing.
-                return;
-            }
             u32 copy_src = dst_pos - offset;
 
             for (u32 i = 0; i < length; i++) {

@@ -14,22 +14,17 @@ static std::mutex g_HandleMutex;
 
 extern "C" {
 
-// Add a reverse map at file scope
-static std::map<void*, Handle_t> g_PtrToHandleMap;
-
 Handle_t CreateHandleFromPtr(void *ptr) {
     if (!ptr) return BAD_HANDLE;
     std::lock_guard<std::mutex> lock(g_HandleMutex);
 
-    // O(log n) lookup for existing pointer
-    auto it = g_PtrToHandleMap.find(ptr);
-    if (it != g_PtrToHandleMap.end()) {
-        return it->second;
+    // Check if handle already exists for this pointer (bi-directional map would be better for perf)
+    for (auto const& [h, p] : g_HandleMap) {
+        if (p == ptr) return h;
     }
 
     Handle_t handle = g_NextHandle++;
     g_HandleMap[handle] = ptr;
-    g_PtrToHandleMap[ptr] = handle;
     return handle;
 }
 

@@ -674,10 +674,8 @@ void thread5_game_loop(UNUSED void *arg) {
     // To support uncapped framerates on modern hardware, we use an accumulator.
     // NOTE: This is a structural suggestion. Actual interpolation requires deep engine changes.
     u64 currentTime = osGetTime();
- u64 accumulator = 0;
- // Use the VI refresh rate for a precise timestep to avoid drift.
- // For NTSC (60Hz), a 30 FPS game has a timestep of 2 VI's.
- const u64 dt = (OS_CPU_COUNTER / 60) * 2;
+    u64 accumulator = 0;
+    const u64 dt = OS_CYCLES_PER_SEC / 30;
 #endif
 
     while (TRUE) {
