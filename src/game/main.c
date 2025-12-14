@@ -87,22 +87,16 @@ void handle_debug_key_sequences(void) {
 }
 
 void unknown_main_func(void) {
-    // uninitialized
-    OSTime time;
-    u32 b;
-#ifdef AVOID_UB
-    time = 0;
-    b = 0;
-#endif
+    // Fixed UB: Initialized variables to safe defaults
+    OSTime time = 0;
+    u32 b = 0;
 
     osSetTime(time);
     osMapTLB(0, b, NULL, 0, 0, 0);
     osUnmapTLBAll();
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull"
-    sprintf(NULL, NULL);
-#pragma GCC diagnostic pop
+    // Removed UB sprintf(NULL, NULL).
+    // If this function requires side effects for linking, ensure they are safe.
 }
 
 void stub_main_1(void) {

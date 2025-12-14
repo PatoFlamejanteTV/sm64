@@ -251,6 +251,8 @@ include Makefile.split
 # Source code files
 LEVEL_C_FILES     := $(wildcard levels/*/leveldata.c) $(wildcard levels/*/script.c) $(wildcard levels/*/geo.c)
 C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c)) $(LEVEL_C_FILES)
+# Interop support
+CXX_FILES         := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
 S_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.s))
 ULTRA_C_FILES     := $(foreach dir,$(ULTRA_SRC_DIRS),$(wildcard $(dir)/*.c))
 GODDARD_C_FILES   := $(foreach dir,$(GODDARD_SRC_DIRS),$(wildcard $(dir)/*.c))
@@ -278,6 +280,7 @@ SOUND_SEQUENCE_FILES := \
 
 # Object files
 O_FILES := $(foreach file,$(C_FILES),$(BUILD_DIR)/$(file:.c=.o)) \
+           $(foreach file,$(CXX_FILES),$(BUILD_DIR)/$(file:.cpp=.o)) \
            $(foreach file,$(S_FILES),$(BUILD_DIR)/$(file:.s=.o)) \
            $(foreach file,$(GENERATED_C_FILES),$(file:.c=.o))
 
@@ -290,6 +293,10 @@ LIBGCC_O_FILES := $(foreach file,$(LIBGCC_C_FILES),$(BUILD_DIR)/$(file:.c=.o))
 
 # Automatic dependency files
 DEP_FILES := $(O_FILES:.o=.d) $(ULTRA_O_FILES:.o=.d) $(GODDARD_O_FILES:.o=.d) $(LIBGCC_O_FILES:.o=.d) $(BUILD_DIR)/$(LD_SCRIPT).d
+
+# C++ Compiler options
+CXX := g++
+CXXFLAGS := -O2 -Wall -Iinclude -Isrc
 
 # Files with GLOBAL_ASM blocks
 ifeq ($(NON_MATCHING),0)
@@ -725,6 +732,12 @@ $(BUILD_DIR)/%.o: %.c
 ifeq ($(VERSION),cn)
 	$(V)$(TOOLS_DIR)/patch_elf_32bit $@
 endif
+
+# Compile C++ code
+$(BUILD_DIR)/%.o: %.cpp
+	$(call print,Compiling C++:,$<,$@)
+	@mkdir -p $(dir $@)
+	$(V)$(CXX) -c $(CXXFLAGS) -o $@ $<
 $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
 	$(call print,Compiling:,$<,$@)
 	$(V)$(CC_CHECK) $(CC_CHECK_CFLAGS) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
@@ -907,7 +920,7 @@ $(BUILD_DIR)/libgcc.a: $(LIBGCC_O_FILES)
 # Link SM64 ELF file
 $(ELF): $(O_FILES) $(MIO0_OBJ_FILES) $(SEG_FILES) $(BUILD_DIR)/$(LD_SCRIPT) undefined_syms.txt $(BUILD_DIR)/libultra.a $(BUILD_DIR)/libgoddard.a $(BUILD_DIR)/libgcc.a
 	@$(PRINT) "$(GREEN)Linking ELF file:  $(BLUE)$@ $(NO_COL)\n"
-	$(V)$(LD) -L $(BUILD_DIR) -T undefined_syms.txt -T $(BUILD_DIR)/$(LD_SCRIPT) -Map $(BUILD_DIR)/sm64.$(VERSION).map --no-check-sections $(addprefix -R ,$(SEG_FILES)) -o $@ $(O_FILES) -lultra -lgoddard -lgcc
+	$(V)$(LD) -L $(BUILD_DIR) -T undefined_syms.txt -T $(BUILD_DIR)/$(LD_SCRIPT) -Map $(BUILD_DIR)/sm64.$(VERSION).map --no-check-sections $(addprefix -R ,$(SEG_FILES)) -o $@ $(O_FILES) -lultra -lgoddard -lgcc -lstdc++
 
 # Build ROM
 ifeq ($(VERSION),cn)

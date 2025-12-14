@@ -138,13 +138,18 @@ void *vec3f_cross(Vec3f dest, Vec3f a, Vec3f b) {
 
 /// Scale vector 'dest' so it has length 1
 void *vec3f_normalize(Vec3f dest) {
-    //! Possible division by zero
-    f32 invsqrt = 1.0f / sqrtf(dest[0] * dest[0] + dest[1] * dest[1] + dest[2] * dest[2]);
-
-    dest[0] *= invsqrt;
-    dest[1] *= invsqrt;
-    dest[2] *= invsqrt;
-    return &dest; //! warning: function returns address of local variable
+    f32 mag = dest[0] * dest[0] + dest[1] * dest[1] + dest[2] * dest[2];
+    if (mag > 0.00001f) {
+        f32 invsqrt = 1.0f / sqrtf(mag);
+        dest[0] *= invsqrt;
+        dest[1] *= invsqrt;
+        dest[2] *= invsqrt;
+    } else {
+        dest[0] = 0;
+        dest[1] = 0;
+        dest[2] = 0;
+    }
+    return dest;
 }
 
 #pragma GCC diagnostic pop
@@ -655,18 +660,18 @@ void vec3f_set_dist_and_angle(Vec3f from, Vec3f to, f32 dist, s16 pitch, s16 yaw
  * most 'inc' and going down at most 'dec'.
  */
 s32 approach_s32(s32 current, s32 target, s32 inc, s32 dec) {
-    //! If target is close to the max or min s32, then it's possible to overflow
-    // past it without stopping.
-
+    // Fixed potential signed integer overflow
     if (current < target) {
-        current += inc;
-        if (current > target) {
+        if (target - current < inc) {
             current = target;
+        } else {
+            current += inc;
         }
     } else {
-        current -= dec;
-        if (current < target) {
+        if (current - target < dec) {
             current = target;
+        } else {
+            current -= dec;
         }
     }
     return current;

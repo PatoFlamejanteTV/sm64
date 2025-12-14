@@ -669,6 +669,15 @@ void thread5_game_loop(UNUSED void *arg) {
     set_sound_mode(save_file_get_sound_mode());
     render_init();
 
+#ifdef ENABLE_UNCAPPED_FRAMERATE
+    // Frame Independence / Decoupling structure (NON_MATCHING)
+    // To support uncapped framerates on modern hardware, we use an accumulator.
+    // NOTE: This is a structural suggestion. Actual interpolation requires deep engine changes.
+    u64 currentTime = osGetTime();
+    u64 accumulator = 0;
+    const u64 dt = OS_CYCLES_PER_SEC / 30;
+#endif
+
     while (TRUE) {
         // If the reset timer is active, run the process to reset the game.
         if (gResetTimer != 0) {
@@ -677,19 +686,35 @@ void thread5_game_loop(UNUSED void *arg) {
         }
         profiler_log_thread5_time(THREAD5_START);
 
-        // If any controllers are plugged in, start read the data for when
-        // read_controller_inputs is called later.
-        if (gControllerBits) {
-#if ENABLE_RUMBLE
-            block_until_rumble_pak_free();
+#ifdef ENABLE_UNCAPPED_FRAMERATE
+        u64 newTime = osGetTime();
+        u64 frameTime = newTime - currentTime;
+        currentTime = newTime;
+        accumulator += frameTime;
+
+        while (accumulator >= dt) {
+            // Logic Update Loop
 #endif
-            osContStartReadData(&gSIEventMesgQueue);
+            // Check controllers, run physics.
+            if (gControllerBits) {
+    #if ENABLE_RUMBLE
+                block_until_rumble_pak_free();
+    #endif
+                osContStartReadData(&gSIEventMesgQueue);
+            }
+            audio_game_loop_tick();
+            select_gfx_pool(); // Must happen before level script execution (rendering)
+            read_controller_inputs();
+            addr = level_script_execute(addr);
+
+#ifdef ENABLE_UNCAPPED_FRAMERATE
+            accumulator -= dt;
         }
 
-        audio_game_loop_tick();
-        select_gfx_pool();
-        read_controller_inputs();
-        addr = level_script_execute(addr);
+        // Render step
+        // In a fully decoupled system, we would pass (accumulator / dt) as alpha for interpolation.
+        // render_frame(accumulator / dt);
+#endif
 
         display_and_vsync();
 
