@@ -2742,7 +2742,10 @@ s32 setup_view_buffers(const char *name, struct ObjView *view, UNUSED s32 ulx, U
     char memtrackerName[0x100];
 
     if (view->flags & (VIEW_Z_BUF | VIEW_COLOUR_BUF) && !(view->flags & VIEW_UNK_1000)) {
-        if (strlen(name) >= sizeof(memtrackerName) - 8) {
+        // The largest suffix is " CBuf" or " ZBuf", both 5 chars.
+        // strlen(name) + 5 (suffix) + 1 (null) <= sizeof(memtrackerName)
+        // strlen(name) <= 256 - 6 = 250
+        if (strlen(name) > 250) {
             fatal_printf("setup_view_buffers() name too long");
         }
 
