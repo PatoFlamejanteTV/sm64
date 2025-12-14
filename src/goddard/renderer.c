@@ -1,6 +1,7 @@
 #include <ultra64.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "debug_utils.h"
 #include "draw_objects.h"
@@ -2741,6 +2742,10 @@ s32 setup_view_buffers(const char *name, struct ObjView *view, UNUSED s32 ulx, U
     char memtrackerName[0x100];
 
     if (view->flags & (VIEW_Z_BUF | VIEW_COLOUR_BUF) && !(view->flags & VIEW_UNK_1000)) {
+        if (strlen(name) >= sizeof(memtrackerName) - 8) {
+            fatal_printf("setup_view_buffers() name too long");
+        }
+
         if (view->flags & VIEW_COLOUR_BUF) {
             sprintf(memtrackerName, "%s CBuf", name);
             start_memtracker(memtrackerName);
