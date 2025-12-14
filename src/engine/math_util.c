@@ -493,43 +493,46 @@ void mtxf_mul(Mat4 dest, Mat4 a, Mat4 b) {
     register f32 entry0;
     register f32 entry1;
     register f32 entry2;
+    f32 (*out)[4] = (f32 (*)[4])((dest != b) ? dest : temp);
 
     // column 0
     entry0 = a[0][0];
     entry1 = a[0][1];
     entry2 = a[0][2];
-    temp[0][0] = entry0 * b[0][0] + entry1 * b[1][0] + entry2 * b[2][0];
-    temp[0][1] = entry0 * b[0][1] + entry1 * b[1][1] + entry2 * b[2][1];
-    temp[0][2] = entry0 * b[0][2] + entry1 * b[1][2] + entry2 * b[2][2];
+    out[0][0] = entry0 * b[0][0] + entry1 * b[1][0] + entry2 * b[2][0];
+    out[0][1] = entry0 * b[0][1] + entry1 * b[1][1] + entry2 * b[2][1];
+    out[0][2] = entry0 * b[0][2] + entry1 * b[1][2] + entry2 * b[2][2];
 
     // column 1
     entry0 = a[1][0];
     entry1 = a[1][1];
     entry2 = a[1][2];
-    temp[1][0] = entry0 * b[0][0] + entry1 * b[1][0] + entry2 * b[2][0];
-    temp[1][1] = entry0 * b[0][1] + entry1 * b[1][1] + entry2 * b[2][1];
-    temp[1][2] = entry0 * b[0][2] + entry1 * b[1][2] + entry2 * b[2][2];
+    out[1][0] = entry0 * b[0][0] + entry1 * b[1][0] + entry2 * b[2][0];
+    out[1][1] = entry0 * b[0][1] + entry1 * b[1][1] + entry2 * b[2][1];
+    out[1][2] = entry0 * b[0][2] + entry1 * b[1][2] + entry2 * b[2][2];
 
     // column 2
     entry0 = a[2][0];
     entry1 = a[2][1];
     entry2 = a[2][2];
-    temp[2][0] = entry0 * b[0][0] + entry1 * b[1][0] + entry2 * b[2][0];
-    temp[2][1] = entry0 * b[0][1] + entry1 * b[1][1] + entry2 * b[2][1];
-    temp[2][2] = entry0 * b[0][2] + entry1 * b[1][2] + entry2 * b[2][2];
+    out[2][0] = entry0 * b[0][0] + entry1 * b[1][0] + entry2 * b[2][0];
+    out[2][1] = entry0 * b[0][1] + entry1 * b[1][1] + entry2 * b[2][1];
+    out[2][2] = entry0 * b[0][2] + entry1 * b[1][2] + entry2 * b[2][2];
 
     // column 3
     entry0 = a[3][0];
     entry1 = a[3][1];
     entry2 = a[3][2];
-    temp[3][0] = entry0 * b[0][0] + entry1 * b[1][0] + entry2 * b[2][0] + b[3][0];
-    temp[3][1] = entry0 * b[0][1] + entry1 * b[1][1] + entry2 * b[2][1] + b[3][1];
-    temp[3][2] = entry0 * b[0][2] + entry1 * b[1][2] + entry2 * b[2][2] + b[3][2];
+    out[3][0] = entry0 * b[0][0] + entry1 * b[1][0] + entry2 * b[2][0] + b[3][0];
+    out[3][1] = entry0 * b[0][1] + entry1 * b[1][1] + entry2 * b[2][1] + b[3][1];
+    out[3][2] = entry0 * b[0][2] + entry1 * b[1][2] + entry2 * b[2][2] + b[3][2];
 
-    temp[0][3] = temp[1][3] = temp[2][3] = 0;
-    temp[3][3] = 1;
+    out[0][3] = out[1][3] = out[2][3] = 0;
+    out[3][3] = 1;
 
-    mtxf_copy(dest, temp);
+    if (dest == b) {
+        mtxf_copy(dest, temp);
+    }
 }
 
 /**
